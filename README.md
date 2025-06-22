@@ -9,12 +9,9 @@ stock-trading-simulator/
 ├── LICENSE             # MIT license
 ├── requirements.txt    # Python dependencies
 ├── src/                # application code
-│   ├── simulation.py   # StockSimulator back-end logic
-│   ├── gui.py          # TradingApp front-end UI
-│   └── main.py         # entry-point
-└── tests/              # automated tests
-    ├── test_simulation.py
-    └── test_gui.py
+    ├── simulation.py   # StockSimulator back-end logic
+    ├── gui.py          # TradingApp front-end UI
+    └── main.py         # entry-point
 ```
 
 ## Setup
