@@ -1,6 +1,6 @@
 # Multi-Stock Trading Simulator
 
-A GUI-based stock trading game with simulated candlestick charts, buy/sell/short orders, and portfolio tracking.
+A GUI-based stock trading game with simulated candlestick charts, buy/sell/short orders, portfolio tracking, and instant exit from all positions.
 
 ## Project Structure
 ```
