@@ -4,8 +4,11 @@ import numpy as np
 import pandas as pd
 import mplfinance as mpf
 import matplotlib.pyplot as plt
+import os
+import shutil
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from src.simulation import StockSimulator
+
 
 class TradingApp(tk.Tk):
     def __init__(self, symbols):
@@ -19,7 +22,7 @@ class TradingApp(tk.Tk):
         self.portfolio = { s:0 for s in symbols }
         # fonts & styles
         self.font_label = ("Segoe UI", 14)
-        self.btn_cfg = {"font":("Segoe UI",14,"bold"), "width":8}
+        self.btn_cfg = {"font":("Segoe UI",14,"bold")}
         # layout frames
         frm_chart = ttk.Frame(self)
         frm_chart.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
@@ -53,6 +56,8 @@ class TradingApp(tk.Tk):
                   command=self.on_sell, **self.btn_cfg).pack(side=tk.LEFT, padx=(10,20))
         tk.Button(frm_ctrl, text="Next Day ▶", bg="#f39c12", fg="white",
                   command=self.on_next, **self.btn_cfg).pack(side=tk.LEFT)
+        tk.Button(frm_ctrl, text="Exit Positions", bg="#0008fd", fg="white",
+          command=self.on_exit_positions, **self.btn_cfg).pack(side=tk.LEFT, padx=(10,0))
         tk.Button(frm_ctrl, text="Exit", bg="#95a5a6", fg="white",
                   command=self.exit_app, **self.btn_cfg).pack(side=tk.RIGHT)
         # status bar
@@ -67,13 +72,19 @@ class TradingApp(tk.Tk):
         self.redraw()
 
     def on_next(self):
-        self.stocks[self.selected].advance()
+        for sim in self.stocks.values():
+            sim.advance()
         self.redraw()
 
     def on_buy(self):
         qty = self.qty_var.get()
         price = self.stocks[self.selected].price()
         cost = price * qty
+        try:
+            qty = int(self.qty_var.get())
+        except (tk.TclError, ValueError):
+            messagebox.showerror("Invalid Quantity", "Please enter a valid integer quantity.")
+            return
         if qty<=0 or cost>self.cash:
             messagebox.showerror("Error","Invalid qty or insufficient cash.")
             return
@@ -84,11 +95,29 @@ class TradingApp(tk.Tk):
     def on_sell(self):
         qty = self.qty_var.get()
         price = self.stocks[self.selected].price()
+        try:
+            qty = int(self.qty_var.get())
+        except (tk.TclError, ValueError):
+            messagebox.showerror("Invalid Quantity", "Please enter a valid integer quantity.")
+            return
         if qty<=0:
             messagebox.showerror("Error","Quantity must be positive.")
             return
         self.cash += price*qty
         self.portfolio[self.selected] -= qty
+        self.redraw()
+
+    def on_exit_positions(self):
+        for sym, qty in list(self.portfolio.items()):
+            price = self.stocks[sym].price()
+            if qty > 0:
+                self.cash += qty * price
+                self.portfolio[sym] = 0
+            elif qty < 0:
+                cover_qty = -qty
+                cost = cover_qty * price
+                self.cash -= cost
+                self.portfolio[sym] = 0
         self.redraw()
 
     def redraw(self):
@@ -109,5 +138,11 @@ class TradingApp(tk.Tk):
         self.canvas.draw()
 
     def exit_app(self):
+        cache_dir = os.path.join(os.path.dirname(__file__), "__pycache__")
+        if os.path.isdir(cache_dir):
+            try:
+                shutil.rmtree(cache_dir)
+            except Exception as e:
+                print(f"Warning: could not remove cache: {e}")
         self.quit()
         self.destroy()
