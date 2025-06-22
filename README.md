@@ -27,6 +27,10 @@ pip install -r requirements.txt
 python -m src.main
 ```
 
+## 📽️ Demo
+
+![Stock Trading Simulator Demo](assets/stock_demo.gif)
+
 # License
 
 MIT License (see [LICENSE](LICENSE))
